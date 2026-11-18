@@ -26,6 +26,7 @@ const animation = {
   duration: 0,
   frameId: null
 };
+const hamsterScale = 3;
 
 document.title = lessonText.pageTitle;
 document.querySelectorAll("[data-text]").forEach((element) => {
@@ -57,9 +58,14 @@ function tickStep(maximum) {
 }
 
 function drawHamster(x, y, rotation) {
+  const centerX = hamsterScale;
+  const centerY = hamsterScale / 2;
+  const offsetX = centerX * Math.cos(rotation) - centerY * Math.sin(rotation);
+  const offsetY = centerX * Math.sin(rotation) + centerY * Math.cos(rotation);
   context.save();
-  context.translate(x, y - 11);
+  context.translate(x - offsetX, y - offsetY);
   context.rotate(rotation);
+  context.scale(hamsterScale, hamsterScale);
 
   context.fillStyle = "#bd8050";
   context.beginPath();
@@ -141,7 +147,7 @@ function drawArrow(startX, startY, endX, endY, color) {
 function drawVelocityVectors(x, y, velocity) {
   const scale = 1.5;
   const originX = x;
-  const originY = y - 11;
+  const originY = y;
   const componentX = velocity.vx * scale;
   const componentY = -velocity.vy * scale;
   const tipX = originX + componentX;
@@ -286,7 +292,11 @@ function drawTrajectory(progress = animation.progress) {
   const after = result.points[Math.min(lastPointIndex, upperIndex + 1)];
   const rotation = -Math.atan2(after.y - before.y, after.x - before.x);
   drawHamster(xPosition(currentPoint.x), yPosition(currentPoint.y), rotation);
-  drawVelocityVectors(xPosition(currentPoint.x), yPosition(currentPoint.y), currentPoint);
+  drawVelocityVectors(
+    xPosition(currentPoint.x),
+    yPosition(currentPoint.y),
+    currentPoint
+  );
 }
 
 function resetPlayback() {
