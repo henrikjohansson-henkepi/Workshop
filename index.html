@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kastparabel – interaktiv fysik</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="content.js" defer></script>
+  <script src="physics.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1 data-text="heading">Henkes kastparabel</h1>
+    <p class="intro" data-text="intro">
+      Undersök hur utkastfarten och vinkeln påverkar bollens bana.
+    </p>
+    <p class="model">
+      <span data-text="model">Start- och sluthöjden är lika. Luftmotstånd försummas.</span>
+      <span id="gravity-value"></span>
+      <span class="animal-note" data-text="animalNote">Hamstern är en tecknad symbol – kasta aldrig ett levande djur.</span>
+    </p>
+
+    <section class="panel" aria-label="Interaktiv simulering av kaströrelse">
+      <div class="controls">
+        <div>
+          <div class="control-heading">
+            <label for="speed" data-text="speedLabel">Begynnelsehastighet v₀</label>
+            <output id="speed-value" for="speed"></output>
+          </div>
+          <input id="speed" type="range">
+        </div>
+        <div>
+          <div class="control-heading">
+            <label for="angle" data-text="angleLabel">Utkastvinkel θ</label>
+            <output id="angle-value" for="angle"></output>
+          </div>
+          <input id="angle" type="range">
+        </div>
+      </div>
+
+      <div class="playback">
+        <button id="play-button" class="play-button" type="button" data-text="playButton">
+          Spela kastet
+        </button>
+        <span id="play-status" aria-live="polite" data-text="readyMessage">
+          Välj Spela kastet för att följa hamsterns bana.
+        </span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="trajectory" role="img" aria-label="Graf över hamsterns kastbana">
+          Graf över hamsterns kastbana
+        </canvas>
+        <div class="axis-caption">
+          <span data-text="xAxis">Horisontellt avstånd x (m)</span>
+          <span data-text="yAxis">Höjd y (m)</span>
+        </div>
+      </div>
+
+      <div class="results" aria-live="polite">
+        <div class="result">
+          <span class="result-label" data-text="flightTimeLabel">Flygtid T</span>
+          <strong id="flight-time"></strong>
+        </div>
+        <div class="result">
+          <span class="result-label" data-text="rangeLabel">Räckvidd R</span>
+          <strong id="range"></strong>
+        </div>
+        <div class="result">
+          <span class="result-label" data-text="maxHeightLabel">Maximal höjd</span>
+          <strong id="max-height"></strong>
+        </div>
+      </div>
+
+      <div class="equations" aria-label="Formler som används">
+        <p data-text="positionX">x(t) = v₀ cos(θ) · t</p>
+        <p data-text="positionY">y(t) = v₀ sin(θ) · t − ½gt²</p>
+        <p data-text="flightAndRange">T = 2v₀ sin(θ) / g och R = v₀² sin(2θ) / g</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

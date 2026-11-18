@@ -1,0 +1,185 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f3f6fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 32px 18px;
+}
+
+main {
+  width: min(100%, 980px);
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.intro {
+  margin: 0 0 8px;
+  color: #536078;
+  line-height: 1.55;
+}
+
+.model {
+  margin: 0 0 24px;
+  color: #536078;
+  line-height: 1.6;
+}
+
+.animal-note {
+  display: block;
+  color: #7a4c34;
+  font-size: 0.92rem;
+}
+
+.panel {
+  padding: 24px;
+  border: 1px solid #dfe5ef;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px #1720330b;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px 28px;
+  margin-bottom: 24px;
+}
+
+.control-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-weight: 650;
+}
+
+output {
+  color: #1858b8;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #2463c5;
+}
+
+.playback {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+}
+
+.play-button {
+  flex: 0 0 auto;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 9px;
+  background: #1858b8;
+  color: #fff;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.play-button:hover {
+  background: #124895;
+}
+
+.play-button:focus-visible {
+  outline: 3px solid #8bb6f2;
+  outline-offset: 3px;
+}
+
+#play-status {
+  color: #536078;
+  font-size: 0.95rem;
+}
+
+.canvas-wrap {
+  overflow: hidden;
+  border: 1px solid #e3e9f2;
+  border-radius: 12px;
+  background: #fbfdff;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 360px;
+}
+
+.axis-caption {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 12px;
+  color: #64718a;
+  font-size: 0.9rem;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.result {
+  padding: 16px;
+  border-radius: 12px;
+  background: #f2f6fc;
+}
+
+.result-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #536078;
+  font-size: 0.95rem;
+}
+
+.result strong {
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.equations {
+  margin-top: 22px;
+  color: #536078;
+  line-height: 1.8;
+}
+
+.equations p {
+  margin: 4px 0;
+}
+
+@media (max-width: 560px) {
+  body {
+    padding: 20px 12px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .playback {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  canvas {
+    height: 280px;
+  }
+}
