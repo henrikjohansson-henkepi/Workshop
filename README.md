@@ -1,6 +1,6 @@
 # Interaktiv kastparabel
 
-En liten webbsida för att undersöka kaströrelse. Den har ett rutnät, graderade axlar, reglage för fart och vinkel samt en tecknad hamster som kan spelas upp längs kastbanan. Den använder bara vanliga HTML-, CSS- och JavaScript-filer: inga paket, installationer eller byggsteg behövs.
+En liten webbsida för att undersöka kaströrelse. Den har ett rutnät, graderade axlar, reglage för fart och vinkel samt en tecknad hamster som kan spelas upp längs kastbanan. Hastighetsvektorn v och komponenterna vx och vy visas i olika färger. Den använder bara vanliga HTML-, CSS- och JavaScript-filer: inga paket, installationer eller byggsteg behövs.
 
 ## Öppna sidan
 

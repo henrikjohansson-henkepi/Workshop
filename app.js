@@ -109,6 +109,67 @@ function drawHamster(x, y, rotation) {
   context.restore();
 }
 
+function drawArrow(startX, startY, endX, endY, color) {
+  const deltaX = endX - startX;
+  const deltaY = endY - startY;
+  const length = Math.hypot(deltaX, deltaY);
+  if (length < 3) {
+    return;
+  }
+
+  const angle = Math.atan2(deltaY, deltaX);
+  const headLength = 7;
+  context.strokeStyle = color;
+  context.fillStyle = color;
+  context.lineWidth = 2;
+  context.lineCap = "round";
+  context.beginPath();
+  context.moveTo(startX, startY);
+  context.lineTo(endX, endY);
+  context.lineTo(
+    endX - headLength * Math.cos(angle - Math.PI / 6),
+    endY - headLength * Math.sin(angle - Math.PI / 6)
+  );
+  context.moveTo(endX, endY);
+  context.lineTo(
+    endX - headLength * Math.cos(angle + Math.PI / 6),
+    endY - headLength * Math.sin(angle + Math.PI / 6)
+  );
+  context.stroke();
+}
+
+function drawVelocityVectors(x, y, velocity) {
+  const scale = 1.5;
+  const originX = x;
+  const originY = y - 11;
+  const componentX = velocity.vx * scale;
+  const componentY = -velocity.vy * scale;
+  const tipX = originX + componentX;
+  const tipY = originY + componentY;
+
+  drawArrow(
+    originX,
+    originY,
+    tipX,
+    originY,
+    "#d94f45"
+  );
+  drawArrow(
+    tipX,
+    originY,
+    tipX,
+    tipY,
+    "#228a57"
+  );
+  drawArrow(
+    originX,
+    originY,
+    tipX,
+    tipY,
+    "#2463c5"
+  );
+}
+
 function drawTrajectory(progress = animation.progress) {
   const visibleProgress = Number.isFinite(progress)
     ? Math.max(0, Math.min(progress, 1))
@@ -184,6 +245,15 @@ function drawTrajectory(progress = animation.progress) {
     context.fillText(axisFormat.format(y), padding.left - 9, position + 4);
   }
 
+  context.save();
+  context.fillStyle = "#536078";
+  context.font = "13px system-ui, sans-serif";
+  context.textAlign = "center";
+  context.translate(16, padding.top + plotHeight / 2);
+  context.rotate(-Math.PI / 2);
+  context.fillText(lessonText.yAxis, 0, 0);
+  context.restore();
+
   context.strokeStyle = "#2463c5";
   context.lineWidth = 3;
   context.lineJoin = "round";
@@ -206,12 +276,17 @@ function drawTrajectory(progress = animation.progress) {
     x: result.points[lowerIndex].x
       + (result.points[upperIndex].x - result.points[lowerIndex].x) * fraction,
     y: result.points[lowerIndex].y
-      + (result.points[upperIndex].y - result.points[lowerIndex].y) * fraction
+      + (result.points[upperIndex].y - result.points[lowerIndex].y) * fraction,
+    vx: result.points[lowerIndex].vx
+      + (result.points[upperIndex].vx - result.points[lowerIndex].vx) * fraction,
+    vy: result.points[lowerIndex].vy
+      + (result.points[upperIndex].vy - result.points[lowerIndex].vy) * fraction
   };
   const before = result.points[Math.max(0, lowerIndex - 1)];
   const after = result.points[Math.min(lastPointIndex, upperIndex + 1)];
   const rotation = -Math.atan2(after.y - before.y, after.x - before.x);
   drawHamster(xPosition(currentPoint.x), yPosition(currentPoint.y), rotation);
+  drawVelocityVectors(xPosition(currentPoint.x), yPosition(currentPoint.y), currentPoint);
 }
 
 function resetPlayback() {

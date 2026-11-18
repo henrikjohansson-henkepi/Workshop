@@ -49,13 +49,18 @@
       </div>
 
       <div class="canvas-wrap">
-        <canvas id="trajectory" role="img" aria-label="Graf över hamsterns kastbana">
+        <canvas id="trajectory" role="img" aria-label="Graf över hamsterns kastbana med hastighetsvektorer">
           Graf över hamsterns kastbana
         </canvas>
         <div class="axis-caption">
           <span data-text="xAxis">Horisontellt avstånd x (m)</span>
-          <span data-text="yAxis">Höjd y (m)</span>
         </div>
+      </div>
+
+      <div class="vector-legend" aria-label="Förklaring av hastighetsvektorer">
+        <span><i class="legend-swatch vector-v"></i><span data-text="velocityVectorLabel">v (blå)</span></span>
+        <span><i class="legend-swatch vector-vx"></i><span data-text="horizontalComponentLabel">vₓ (röd)</span></span>
+        <span><i class="legend-swatch vector-vy"></i><span data-text="verticalComponentLabel">vᵧ (grön)</span></span>
       </div>
 
       <div class="results" aria-live="polite">

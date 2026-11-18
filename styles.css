@@ -122,11 +122,43 @@ canvas {
 }
 
 .axis-caption {
-  display: flex;
-  justify-content: space-between;
   padding: 0 12px 12px;
   color: #64718a;
   font-size: 0.9rem;
+}
+
+.vector-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 16px;
+  color: #536078;
+  font-size: 0.95rem;
+}
+
+.vector-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.vector-v {
+  background: #2463c5;
+}
+
+.vector-vx {
+  background: #d94f45;
+}
+
+.vector-vy {
+  background: #228a57;
 }
 
 .results {
