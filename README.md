@@ -1,21 +1,37 @@
-# Interaktiv kastparabel
+# Andra ordningens differentialekvationer by Henke
 
-En liten webbsida för att undersöka kaströrelse. Den har ett rutnät, graderade axlar, reglage för fart och vinkel samt en tecknad hamster som kan spelas upp längs kastbanan. Hastighetsvektorn v och komponenterna vx och vy visas i olika färger. Den använder bara vanliga HTML-, CSS- och JavaScript-filer: inga paket, installationer eller byggsteg behövs.
+En interaktiv webbsida för att undersöka differentialekvationer av formen
+
+`y″ + ay′ + by = f(x)`
+
+Ange koefficienterna `a` och `b`, funktionen `f(x)` samt begynnelsevillkoren
+`y(0)` och `y′(0)`. Sidan visar en sluten lösning för polynom, exponential-
+och sinus-/cosinusfunktioner samt ritar lösningens kurva för `0 ≤ x ≤ 20`.
+Den anger även om systemet har resonans, dämpad svängning eller kritisk
+dämpning.
 
 ## Öppna sidan
 
-Öppna `index.html` i en webbläsare. Du kan också öppna projektmappen i VS Code och dubbelklicka på `index.html` därifrån.
+Öppna `index.html` i en webbläsare. Inga paket, installationer eller byggsteg
+behövs.
 
-## Ändra innehåll
+## Funktioner i f(x)
 
-- **Undervisningstexter, formler och reglage:** ändra texten och start-/min-/maxvärdena i `content.js`.
-- **Tyngdacceleration och fysikberäkningar:** ändra `gravity` och formlerna i `physics.js`. Värdet på g som visas på sidan hämtas från samma fil.
-- **Utseende:** ändra `styles.css`.
-- `app.js` kopplar ihop filerna och ritar grafen. Du behöver normalt inte ändra den.
-- `index.html` innehåller sidans struktur och laddar de andra filerna.
+Skriv en summa av tal, polynom, `sin(k*x)`, `cos(k*x)` och `exp(k*x)`.
+Exempel: `sin(x)`, `x^2 + 2*x + 1` och `exp(-x)`. Multiplikation skrivs med
+`*`. Andra funktioner eller uttryck som inte stöds ger ett tydligt fel i stället
+för att visa en numerisk approximation som om den vore en sluten lösning.
 
-Efter en ändring sparar du filen och laddar om sidan i webbläsaren.
+## Filer
+
+- `index.html` innehåller sidans struktur och inmatningsfält.
+- `app.js` hanterar inmatning, visar den slutna lösningen och ritar grafen.
+- `physics.js` tolkar de stödda funktionerna och bygger lösningen.
+- `content.js` innehåller sidans texter.
+- `styles.css` styr utseendet.
 
 ## Publicera med GitHub Pages
 
-Lägg hela projektmappen i ett GitHub-repository. Välj sedan **Settings → Pages** i repositoryt. Under **Build and deployment** väljer du **Deploy from a branch**, grenen `main` och mappen `/(root)`, och sparar. När GitHub Pages har publicerat sidan visas länken på samma inställningssida.
+Lägg projektmappen i ett GitHub-repository. Välj **Settings → Pages** i
+repositoryt. Under **Build and deployment** väljer du **Deploy from a branch**,
+grenen `main` och mappen `/(root)`, och sparar.

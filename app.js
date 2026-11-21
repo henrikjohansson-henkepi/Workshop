@@ -1,32 +1,23 @@
 const lessonText = window.lessonText;
-const controls = window.lessonControls;
-const { gravity, simulate } = window.projectilePhysics;
-const speedSlider = document.querySelector("#speed");
-const angleSlider = document.querySelector("#angle");
-const speedValue = document.querySelector("#speed-value");
-const angleValue = document.querySelector("#angle-value");
-const flightTimeValue = document.querySelector("#flight-time");
-const rangeValue = document.querySelector("#range");
-const maxHeightValue = document.querySelector("#max-height");
-const canvas = document.querySelector("#trajectory");
+const { buildExactSolution } = window.odeSolver;
+const form = document.querySelector("#equation-form");
+const inputA = document.querySelector("#coefficient-a");
+const inputB = document.querySelector("#coefficient-b");
+const inputForcing = document.querySelector("#forcing");
+const inputY0 = document.querySelector("#initial-y");
+const inputVelocity0 = document.querySelector("#initial-velocity");
+const equationDisplay = document.querySelector("#equation-display");
+const errorMessage = document.querySelector("#error-message");
+const exactSolution = document.querySelector("#exact-solution");
+const classificationValue = document.querySelector("#classification");
+const canvas = document.querySelector("#solution-graph");
 const context = canvas.getContext("2d");
-const gravityValue = document.querySelector("#gravity-value");
-const playButton = document.querySelector("#play-button");
-const playStatus = document.querySelector("#play-status");
-const numberFormat = new Intl.NumberFormat("sv-SE", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2
+const numberFormat = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 10,
+  useGrouping: false
 });
 const axisFormat = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 2 });
-const animation = {
-  status: "idle",
-  progress: 0,
-  startTime: 0,
-  elapsedBeforePause: 0,
-  duration: 0,
-  frameId: null
-};
-const hamsterScale = 3;
+const endX = 20;
 
 document.title = lessonText.pageTitle;
 document.querySelectorAll("[data-text]").forEach((element) => {
@@ -36,160 +27,16 @@ document.querySelectorAll("[data-text]").forEach((element) => {
   }
   element.textContent = lessonText[key];
 });
-canvas.setAttribute("aria-label", lessonText.graphLabel);
-gravityValue.textContent = `Tyngdacceleration: g = ${numberFormat.format(gravity)} m/s².`;
-
-for (const [slider, settings] of [
-  [speedSlider, controls.speed],
-  [angleSlider, controls.angle]
-]) {
-  slider.min = settings.min;
-  slider.max = settings.max;
-  slider.step = settings.step;
-  slider.value = settings.initial;
-}
 
 function tickStep(maximum) {
-  const roughStep = maximum / 6;
+  const roughStep = maximum / 5;
   const magnitude = 10 ** Math.floor(Math.log10(roughStep));
   const fraction = roughStep / magnitude;
   const niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
   return niceFraction * magnitude;
 }
 
-function drawHamster(x, y, rotation) {
-  const centerX = hamsterScale;
-  const centerY = hamsterScale / 2;
-  const offsetX = centerX * Math.cos(rotation) - centerY * Math.sin(rotation);
-  const offsetY = centerX * Math.sin(rotation) + centerY * Math.cos(rotation);
-  context.save();
-  context.translate(x - offsetX, y - offsetY);
-  context.rotate(rotation);
-  context.scale(hamsterScale, hamsterScale);
-
-  context.fillStyle = "#bd8050";
-  context.beginPath();
-  context.ellipse(-2, 2, 15, 10, 0, 0, 2 * Math.PI);
-  context.fill();
-
-  context.fillStyle = "#f3dfc5";
-  context.beginPath();
-  context.arc(3, -7, 4, 0, 2 * Math.PI);
-  context.arc(11, -6, 4, 0, 2 * Math.PI);
-  context.fill();
-  context.fillStyle = "#d8898d";
-  context.beginPath();
-  context.arc(3, -7, 2, 0, 2 * Math.PI);
-  context.arc(11, -6, 2, 0, 2 * Math.PI);
-  context.fill();
-
-  context.fillStyle = "#d9ad7b";
-  context.beginPath();
-  context.ellipse(-2, 2, 11, 7, 0, 0, 2 * Math.PI);
-  context.fill();
-
-  context.fillStyle = "#f3dfc5";
-  context.beginPath();
-  context.ellipse(8, -1, 9, 8, 0, 0, 2 * Math.PI);
-  context.fill();
-
-  context.fillStyle = "#4a352c";
-  context.beginPath();
-  context.arc(11, -4, 1.2, 0, 2 * Math.PI);
-  context.fill();
-
-  context.fillStyle = "#d8898d";
-  context.beginPath();
-  context.arc(16, 0, 1.8, 0, 2 * Math.PI);
-  context.fill();
-
-  context.strokeStyle = "#79583f";
-  context.lineWidth = 0.8;
-  context.beginPath();
-  context.moveTo(14, 1);
-  context.lineTo(19, 0);
-  context.moveTo(14, 2);
-  context.lineTo(19, 3);
-  context.stroke();
-
-  context.restore();
-}
-
-function drawArrow(startX, startY, endX, endY, color) {
-  const deltaX = endX - startX;
-  const deltaY = endY - startY;
-  const length = Math.hypot(deltaX, deltaY);
-  if (length < 3) {
-    return;
-  }
-
-  const angle = Math.atan2(deltaY, deltaX);
-  const headLength = 7;
-  context.strokeStyle = color;
-  context.fillStyle = color;
-  context.lineWidth = 2;
-  context.lineCap = "round";
-  context.beginPath();
-  context.moveTo(startX, startY);
-  context.lineTo(endX, endY);
-  context.lineTo(
-    endX - headLength * Math.cos(angle - Math.PI / 6),
-    endY - headLength * Math.sin(angle - Math.PI / 6)
-  );
-  context.moveTo(endX, endY);
-  context.lineTo(
-    endX - headLength * Math.cos(angle + Math.PI / 6),
-    endY - headLength * Math.sin(angle + Math.PI / 6)
-  );
-  context.stroke();
-}
-
-function drawVelocityVectors(x, y, velocity) {
-  const scale = 1.5;
-  const originX = x;
-  const originY = y;
-  const componentX = velocity.vx * scale;
-  const componentY = -velocity.vy * scale;
-  const tipX = originX + componentX;
-  const tipY = originY + componentY;
-
-  drawArrow(
-    originX,
-    originY,
-    tipX,
-    originY,
-    "#d94f45"
-  );
-  drawArrow(
-    tipX,
-    originY,
-    tipX,
-    tipY,
-    "#228a57"
-  );
-  drawArrow(
-    originX,
-    originY,
-    tipX,
-    tipY,
-    "#2463c5"
-  );
-}
-
-function drawTrajectory(progress = animation.progress) {
-  const visibleProgress = Number.isFinite(progress)
-    ? Math.max(0, Math.min(progress, 1))
-    : 0;
-  const speed = Number(speedSlider.value);
-  const angleDegrees = Number(angleSlider.value);
-  const result = simulate(speed, angleDegrees);
-
-  speedValue.textContent = `${speed} m/s`;
-  angleValue.textContent = `${angleDegrees}°`;
-  flightTimeValue.textContent = `${numberFormat.format(result.flightTime)} s`;
-  rangeValue.textContent = `${numberFormat.format(result.range)} m`;
-  maxHeightValue.textContent = `${numberFormat.format(result.maxHeight)} m`;
-
+function drawGraph(points) {
   const pixelRatio = window.devicePixelRatio || 1;
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
@@ -198,73 +45,66 @@ function drawTrajectory(progress = animation.progress) {
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   context.clearRect(0, 0, width, height);
 
-  const padding = { left: 54, right: 20, top: 20, bottom: 40 };
+  const minimum = Math.min(...points.map((point) => point.y), 0);
+  const maximum = Math.max(...points.map((point) => point.y), 0);
+  const span = Math.max(maximum - minimum, 1);
+  const padding = { left: 60, right: 20, top: 24, bottom: 42 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
-  const xMax = Math.max(result.range * 1.15, 5);
-  const yMax = Math.max(result.maxHeight * 1.3, 5);
-  const xPosition = (x) => padding.left + x / xMax * plotWidth;
-  const yPosition = (y) => height - padding.bottom - y / yMax * plotHeight;
+  const yMin = minimum - span * 0.1;
+  const yMax = maximum + span * 0.1;
+  const xPosition = (x) => padding.left + x / endX * plotWidth;
+  const yPosition = (y) => height - padding.bottom - (y - yMin) / (yMax - yMin) * plotHeight;
+  const yStep = tickStep(yMax - yMin);
 
   context.strokeStyle = "#e5eaf2";
   context.lineWidth = 1;
   context.beginPath();
-  const xStep = tickStep(xMax);
-  for (let x = xStep; x < xMax; x += xStep) {
-    context.moveTo(xPosition(x), padding.top);
-    context.lineTo(xPosition(x), height - padding.bottom);
+  for (let x = 0; x <= endX; x += 2) {
+    const position = xPosition(x);
+    context.moveTo(position, padding.top);
+    context.lineTo(position, height - padding.bottom);
   }
-  const yStep = tickStep(yMax);
-  for (let y = yStep; y < yMax; y += yStep) {
-    context.moveTo(padding.left, yPosition(y));
-    context.lineTo(width - padding.right, yPosition(y));
+  for (let y = Math.ceil(yMin / yStep) * yStep; y <= yMax; y += yStep) {
+    const position = yPosition(y);
+    context.moveTo(padding.left, position);
+    context.lineTo(width - padding.right, position);
   }
   context.stroke();
 
-  context.strokeStyle = "#b8c4d6";
-  context.lineWidth = 1;
+  context.strokeStyle = "#8c9ab0";
+  context.lineWidth = 1.2;
   context.beginPath();
-  context.moveTo(padding.left, padding.top);
-  context.lineTo(padding.left, height - padding.bottom);
-  context.lineTo(width - padding.right, height - padding.bottom);
+  const zeroY = yPosition(0);
+  context.moveTo(padding.left, zeroY);
+  context.lineTo(width - padding.right, zeroY);
   context.stroke();
 
   context.fillStyle = "#64718a";
   context.font = "12px system-ui, sans-serif";
   context.textAlign = "center";
-  for (let x = 0; x <= xMax; x += xStep) {
-    const position = xPosition(x);
-    context.beginPath();
-    context.moveTo(position, height - padding.bottom);
-    context.lineTo(position, height - padding.bottom + 5);
-    context.stroke();
-    context.fillText(axisFormat.format(x), position, height - padding.bottom + 19);
+  for (let x = 0; x <= endX; x += 2) {
+    context.fillText(axisFormat.format(x), xPosition(x), height - padding.bottom + 20);
   }
-
   context.textAlign = "right";
-  for (let y = yStep; y <= yMax; y += yStep) {
-    const position = yPosition(y);
-    context.beginPath();
-    context.moveTo(padding.left - 5, position);
-    context.lineTo(padding.left, position);
-    context.stroke();
-    context.fillText(axisFormat.format(y), padding.left - 9, position + 4);
+  for (let y = Math.ceil(yMin / yStep) * yStep; y <= yMax; y += yStep) {
+    context.fillText(axisFormat.format(y), padding.left - 9, yPosition(y) + 4);
   }
 
   context.save();
   context.fillStyle = "#536078";
   context.font = "13px system-ui, sans-serif";
   context.textAlign = "center";
-  context.translate(16, padding.top + plotHeight / 2);
+  context.translate(17, padding.top + plotHeight / 2);
   context.rotate(-Math.PI / 2);
   context.fillText(lessonText.yAxis, 0, 0);
   context.restore();
 
   context.strokeStyle = "#2463c5";
-  context.lineWidth = 3;
+  context.lineWidth = 2.5;
   context.lineJoin = "round";
   context.beginPath();
-  result.points.forEach((point, index) => {
+  points.forEach((point, index) => {
     if (index === 0) {
       context.moveTo(xPosition(point.x), yPosition(point.y));
     } else {
@@ -272,90 +112,60 @@ function drawTrajectory(progress = animation.progress) {
     }
   });
   context.stroke();
-
-  const lastPointIndex = result.points.length - 1;
-  const pointPosition = visibleProgress * lastPointIndex;
-  const lowerIndex = Math.min(Math.floor(pointPosition), lastPointIndex);
-  const upperIndex = Math.min(lowerIndex + 1, lastPointIndex);
-  const fraction = pointPosition - lowerIndex;
-  const currentPoint = {
-    x: result.points[lowerIndex].x
-      + (result.points[upperIndex].x - result.points[lowerIndex].x) * fraction,
-    y: result.points[lowerIndex].y
-      + (result.points[upperIndex].y - result.points[lowerIndex].y) * fraction,
-    vx: result.points[lowerIndex].vx
-      + (result.points[upperIndex].vx - result.points[lowerIndex].vx) * fraction,
-    vy: result.points[lowerIndex].vy
-      + (result.points[upperIndex].vy - result.points[lowerIndex].vy) * fraction
-  };
-  const before = result.points[Math.max(0, lowerIndex - 1)];
-  const after = result.points[Math.min(lastPointIndex, upperIndex + 1)];
-  const rotation = -Math.atan2(after.y - before.y, after.x - before.x);
-  drawHamster(xPosition(currentPoint.x), yPosition(currentPoint.y), rotation);
-  drawVelocityVectors(
-    xPosition(currentPoint.x),
-    yPosition(currentPoint.y),
-    currentPoint
-  );
 }
 
-function resetPlayback() {
-  if (animation.frameId !== null) {
-    cancelAnimationFrame(animation.frameId);
+function readNumber(input, label) {
+  if (input.value.trim() === "") {
+    throw new Error(`Ange ett värde för ${label}.`);
   }
-  animation.status = "idle";
-  animation.progress = 0;
-  animation.elapsedBeforePause = 0;
-  animation.frameId = null;
-  playButton.textContent = lessonText.playButton;
-  playStatus.textContent = lessonText.readyMessage;
-  drawTrajectory();
+  const value = Number(input.value);
+  if (!Number.isFinite(value)) {
+    throw new Error(`${label} måste vara ett ändligt tal.`);
+  }
+  return value;
 }
 
-function animate(now) {
-  animation.progress = Math.min((now - animation.startTime) / animation.duration, 1);
-  drawTrajectory();
-
-  if (animation.progress < 1) {
-    animation.frameId = requestAnimationFrame(animate);
-    return;
+function formatTerm(coefficient, variable) {
+  const magnitude = Math.abs(coefficient);
+  if (magnitude === 0) {
+    return "";
   }
-
-  animation.status = "finished";
-  animation.frameId = null;
-  playButton.textContent = lessonText.replayButton;
-  playStatus.textContent = lessonText.finishedMessage;
+  const sign = coefficient < 0 ? " − " : " + ";
+  const value = magnitude === 1 ? "" : numberFormat.format(magnitude);
+  return `${sign}${value}${variable}`;
 }
 
-function togglePlayback() {
-  if (animation.status === "playing") {
-    cancelAnimationFrame(animation.frameId);
-    animation.elapsedBeforePause = performance.now() - animation.startTime;
-    animation.status = "paused";
-    animation.frameId = null;
-    playButton.textContent = lessonText.resumeButton;
-    playStatus.textContent = lessonText.pausedMessage;
-    return;
-  }
+function calculate() {
+  errorMessage.hidden = true;
+  try {
+    const a = readNumber(inputA, "a");
+    const b = readNumber(inputB, "b");
+    const y0 = readNumber(inputY0, "y(0)");
+    const velocity0 = readNumber(inputVelocity0, "y′(0)");
+    const expression = inputForcing.value;
+    const solution = buildExactSolution({ a, b, expression, y0, velocity0 });
 
-  if (animation.status === "paused") {
-    animation.startTime = performance.now() - animation.elapsedBeforePause;
-  } else {
-    animation.progress = 0;
-    animation.elapsedBeforePause = 0;
-    const flightTime = simulate(Number(speedSlider.value), Number(angleSlider.value)).flightTime;
-    animation.duration = Math.max(1000, Math.min(flightTime * 1000, 4500));
-    animation.startTime = performance.now();
+    equationDisplay.textContent =
+      `y″${formatTerm(a, "y′")}${formatTerm(b, "y")} = ${expression}; `
+      + `y(0) = ${numberFormat.format(y0)}, y′(0) = ${numberFormat.format(velocity0)}`;
+    exactSolution.textContent = `y(x) = ${solution.formula}`;
+    classificationValue.textContent = solution.classification;
+    canvas.setAttribute("aria-label", `${lessonText.graphLabel}, från x = 0 till x = ${endX}`);
+    drawGraph(solution.points);
+  } catch (error) {
+    errorMessage.textContent = error.message || lessonText.solveError;
+    errorMessage.hidden = false;
+    equationDisplay.textContent = "";
+    exactSolution.textContent = "";
+    classificationValue.textContent = "";
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
   }
-
-  animation.status = "playing";
-  playButton.textContent = lessonText.pauseButton;
-  playStatus.textContent = lessonText.playingMessage;
-  animation.frameId = requestAnimationFrame(animate);
 }
 
-speedSlider.addEventListener("input", resetPlayback);
-angleSlider.addEventListener("input", resetPlayback);
-playButton.addEventListener("click", togglePlayback);
-window.addEventListener("resize", () => drawTrajectory());
-drawTrajectory();
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  calculate();
+});
+window.addEventListener("resize", calculate);
+calculate();

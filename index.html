@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kastparabel – interaktiv fysik</title>
+  <title>Andra ordningens differentialekvationer by Henke</title>
   <link rel="stylesheet" href="styles.css">
   <script src="content.js" defer></script>
   <script src="physics.js" defer></script>
@@ -11,78 +11,68 @@
 </head>
 <body>
   <main>
-    <h1 data-text="heading">Henkes kastparabel</h1>
+    <h1 data-text="heading">Andra ordningens differentialekvationer by Henke</h1>
     <p class="intro" data-text="intro">
-      Undersök hur utkastfarten och vinkeln påverkar bollens bana.
-    </p>
-    <p class="model">
-      <span data-text="model">Start- och sluthöjden är lika. Luftmotstånd försummas.</span>
-      <span id="gravity-value"></span>
-      <span class="animal-note" data-text="animalNote">Hamstern är en tecknad symbol – kasta aldrig ett levande djur.</span>
+      Undersök hur koefficienterna, kraften och begynnelsevillkoren påverkar lösningen.
     </p>
 
-    <section class="panel" aria-label="Interaktiv simulering av kaströrelse">
-      <div class="controls">
-        <div>
-          <div class="control-heading">
-            <label for="speed" data-text="speedLabel">Begynnelsehastighet v₀</label>
-            <output id="speed-value" for="speed"></output>
-          </div>
-          <input id="speed" type="range">
-        </div>
-        <div>
-          <div class="control-heading">
-            <label for="angle" data-text="angleLabel">Utkastvinkel θ</label>
-            <output id="angle-value" for="angle"></output>
-          </div>
-          <input id="angle" type="range">
-        </div>
-      </div>
+    <section class="panel" aria-label="Simulering av en andra ordningens differentialekvation">
+      <form id="equation-form" class="controls">
+        <label class="field">
+          <span>Koefficient a</span>
+          <input id="coefficient-a" type="number" step="any" value="1.4" required>
+        </label>
+        <label class="field">
+          <span>Koefficient b</span>
+          <input id="coefficient-b" type="number" step="any" value="0.8" required>
+        </label>
+        <label class="field">
+          <span>Högerled f(x)</span>
+          <input id="forcing" type="text" value="sin(x)" autocomplete="off" required aria-describedby="function-help">
+        </label>
+        <label class="field">
+          <span>Begynnelsevärde y(0)</span>
+          <input id="initial-y" type="number" step="any" value="0" required>
+        </label>
+        <label class="field">
+          <span>Begynnelsehastighet y′(0)</span>
+          <input id="initial-velocity" type="number" step="any" value="1" required>
+        </label>
+        <button class="solve-button" type="submit">Beräkna lösning</button>
+      </form>
 
-      <div class="playback">
-        <button id="play-button" class="play-button" type="button" data-text="playButton">
-          Spela kastet
-        </button>
-        <span id="play-status" aria-live="polite" data-text="readyMessage">
-          Välj Spela kastet för att följa hamsterns bana.
-        </span>
-      </div>
+      <p class="function-help" id="function-help">
+        Skriv en summa av tal, polynom, <code>sin(k*x)</code>, <code>cos(k*x)</code>
+        eller <code>exp(k*x)</code>, till exempel <code>sin(x)</code> eller
+        <code>x^2 + 2*x + 1</code>. Multiplikation skrivs med <code>*</code>.
+      </p>
+
+      <p class="equation-display" id="equation-display" aria-live="polite"></p>
+      <p class="error-message" id="error-message" role="alert" hidden></p>
 
       <div class="canvas-wrap">
-        <canvas id="trajectory" role="img" aria-label="Graf över hamsterns kastbana med hastighetsvektorer">
-          Graf över hamsterns kastbana
+        <canvas id="solution-graph" role="img" aria-label="Graf över den slutna lösningen y(x)">
+          Graf över lösningen y(x)
         </canvas>
         <div class="axis-caption">
-          <span data-text="xAxis">Horisontellt avstånd x (m)</span>
+          <span data-text="xAxis">x</span>
         </div>
-      </div>
-
-      <div class="vector-legend" aria-label="Förklaring av hastighetsvektorer">
-        <span><i class="legend-swatch vector-v"></i><span data-text="velocityVectorLabel">v (blå)</span></span>
-        <span><i class="legend-swatch vector-vx"></i><span data-text="horizontalComponentLabel">vₓ (röd)</span></span>
-        <span><i class="legend-swatch vector-vy"></i><span data-text="verticalComponentLabel">vᵧ (grön)</span></span>
       </div>
 
       <div class="results" aria-live="polite">
         <div class="result">
-          <span class="result-label" data-text="flightTimeLabel">Flygtid T</span>
-          <strong id="flight-time"></strong>
+          <span class="result-label">Exakt lösning y(x)</span>
+          <p id="exact-solution" class="exact-solution"></p>
         </div>
         <div class="result">
-          <span class="result-label" data-text="rangeLabel">Räckvidd R</span>
-          <strong id="range"></strong>
-        </div>
-        <div class="result">
-          <span class="result-label" data-text="maxHeightLabel">Maximal höjd</span>
-          <strong id="max-height"></strong>
+          <span class="result-label" data-text="classificationLabel">Typ av svängning</span>
+          <strong id="classification"></strong>
         </div>
       </div>
-
-      <div class="equations" aria-label="Formler som används">
-        <p data-text="positionX">x(t) = v₀ cos(θ) · t</p>
-        <p data-text="positionY">y(t) = v₀ sin(θ) · t − ½gt²</p>
-        <p data-text="flightAndRange">T = 2v₀ sin(θ) / g och R = v₀² sin(2θ) / g</p>
-      </div>
+      <p class="method-note">
+        Lösningen visas i sluten form. Irrationella konstanter avrundas till högst 10 decimaler.
+        Grafen ritas från formeln på intervallet 0 ≤ x ≤ 20.
+      </p>
     </section>
   </main>
 </body>
